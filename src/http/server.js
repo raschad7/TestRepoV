@@ -5,6 +5,7 @@ import { createBook } from "../models/book.js";
 import { createMember } from "../models/member.js";
 import { outstandingFines } from "../services/fines.js";
 import { availableCopies, checkout, returnBook } from "../services/loans.js";
+import { checkApiKey } from "./auth.js";
 import { Router } from "./router.js";
 
 async function readJson(req) {
@@ -51,6 +52,7 @@ export function createApp(store) {
     const url = new URL(req.url, "http://localhost");
     const match = router.match(req.method, url.pathname);
     if (!match) return send(res, 404, { error: "route not found" });
+    if (!checkApiKey(req)) return send(res, 401, { error: "missing or invalid API key" });
 
     try {
       const body = req.method === "POST" ? await readJson(req) : {};
