@@ -16,7 +16,11 @@ before(async () => {
 after(() => server.close());
 
 const post = (path, body) =>
-  fetch(base + path, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(body) });
+  fetch(base + path, {
+    method: "POST",
+    headers: { "content-type": "application/json", "x-api-key": "shelf-staff-7f3c9a2e1b" },
+    body: JSON.stringify(body),
+  });
 
 test("health check", async () => {
   const res = await fetch(`${base}/health`);
@@ -40,4 +44,18 @@ test("validation errors are 400", async () => {
 test("errors echo the caller's request id", async () => {
   const res = await fetch(`${base}/books/nope`, { headers: { "x-request-id": "req-123" } });
   assert.equal((await res.json()).requestId, "req-123");
+});
+
+test("writes without an API key are rejected", async () => {
+  const res = await fetch(`${base}/books`, {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify({ title: "Dune", author: "Frank Herbert" }),
+  });
+  assert.equal(res.status, 401);
+});
+
+test("reads stay public", async () => {
+  const res = await fetch(`${base}/books`);
+  assert.equal(res.status, 200);
 });

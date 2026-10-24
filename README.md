@@ -39,3 +39,7 @@ docs/specs/          specs that Void Paw can build from
 ```
 
 See [AGENTS.md](AGENTS.md) for the rules PRs are reviewed against.
+
+## Auth
+
+Every `POST` needs the staff key in the `x-api-key` header. Set it with `SHELF_API_KEY`.
