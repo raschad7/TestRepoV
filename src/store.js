@@ -2,7 +2,10 @@ import { randomUUID } from "node:crypto";
 
 import { NotFoundError } from "./util/errors.js";
 
-/** In-memory repository. One instance per running app; tests create their own. */
+/**
+ * In-memory repository. One instance per running app; tests create their own.
+ * `require*` methods throw NotFoundError instead of returning undefined.
+ */
 export class Store {
   constructor() {
     this.books = new Map();
@@ -19,7 +22,7 @@ export class Store {
     return book;
   }
 
-  getBook(id) {
+  requireBook(id) {
     const book = this.books.get(id);
     if (!book) throw new NotFoundError("book", id);
     return book;
@@ -34,7 +37,7 @@ export class Store {
     return member;
   }
 
-  getMember(id) {
+  requireMember(id) {
     const member = this.members.get(id);
     if (!member) throw new NotFoundError("member", id);
     return member;
@@ -45,17 +48,17 @@ export class Store {
     return loan;
   }
 
-  getLoan(id) {
+  requireLoan(id) {
     const loan = this.loans.get(id);
     if (!loan) throw new NotFoundError("loan", id);
     return loan;
   }
 
-  activeLoansForBook(bookId) {
+  openLoansForBook(bookId) {
     return [...this.loans.values()].filter((l) => l.bookId === bookId && !l.returnedAt);
   }
 
-  activeLoansForMember(memberId) {
+  openLoansForMember(memberId) {
     return [...this.loans.values()].filter((l) => l.memberId === memberId && !l.returnedAt);
   }
 }

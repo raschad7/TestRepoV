@@ -27,13 +27,13 @@ export function buildRouter(store) {
   router.add("GET", "/books", () => [200, store.listBooks()]);
   router.add("POST", "/books", ({ body }) => [201, store.saveBook(createBook({ ...body, id: store.newId() }))]);
   router.add("GET", "/books/:id", ({ params }) => {
-    const book = store.getBook(params.id);
+    const book = store.requireBook(params.id);
     return [200, { ...book, available: availableCopies(store, book.id) }];
   });
 
   router.add("POST", "/members", ({ body }) => [201, store.saveMember(createMember({ ...body, id: store.newId() }))]);
   router.add("GET", "/members/:id/fines", ({ params }) => {
-    store.getMember(params.id);
+    store.requireMember(params.id);
     const loans = [...store.loans.values()].filter((l) => l.memberId === params.id);
     return [200, { memberId: params.id, totalCents: outstandingFines(loans) }];
   });
