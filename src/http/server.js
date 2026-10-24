@@ -56,7 +56,10 @@ export function createApp(store) {
       const [status, payload] = await match.handler({ params: match.params, query: url.searchParams, body });
       send(res, status, payload);
     } catch (err) {
-      send(res, err.status ?? 500, { error: err.message });
+      const status = err.status ?? 500;
+      // Clients branch on `code`; `error` stays human-readable and may change wording.
+      const code = status === 500 ? "InternalError" : err.name;
+      send(res, status, { error: status === 500 ? "internal error" : err.message, code });
     }
   });
 }

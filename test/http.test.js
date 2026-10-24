@@ -35,4 +35,11 @@ test("create a book, a member, and borrow it", async () => {
 test("validation errors are 400", async () => {
   const res = await post("/books", { title: "", author: "x" });
   assert.equal(res.status, 400);
+  assert.equal((await res.json()).code, "ValidationError");
+});
+
+test("unknown ids are 404 with a NotFoundError code", async () => {
+  const res = await fetch(`${base}/books/nope`);
+  assert.equal(res.status, 404);
+  assert.equal((await res.json()).code, "NotFoundError");
 });
