@@ -22,6 +22,7 @@ npm start          # http://localhost:3000
 | GET | `/members/:id/fines` | Total outstanding fines, in cents |
 | POST | `/loans` | Borrow a book `{ bookId, memberId }` |
 | POST | `/loans/:id/return` | Return a book; the response includes the fine |
+| POST | `/loans/:id/renew` | Renew a loan for another loan period |
 
 ## Layout
 

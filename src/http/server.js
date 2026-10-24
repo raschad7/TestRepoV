@@ -4,7 +4,7 @@ import { createServer } from "node:http";
 import { createBook } from "../models/book.js";
 import { createMember } from "../models/member.js";
 import { outstandingFines } from "../services/fines.js";
-import { availableCopies, checkout, returnBook } from "../services/loans.js";
+import { availableCopies, checkout, renew, returnBook } from "../services/loans.js";
 import { Router } from "./router.js";
 
 async function readJson(req) {
@@ -40,6 +40,7 @@ export function buildRouter(store) {
 
   router.add("POST", "/loans", ({ body }) => [201, checkout(store, body)]);
   router.add("POST", "/loans/:id/return", ({ params }) => [200, returnBook(store, { loanId: params.id })]);
+  router.add("POST", "/loans/:id/renew", ({ params }) => [200, renew(store, { loanId: params.id })]);
 
   return router;
 }

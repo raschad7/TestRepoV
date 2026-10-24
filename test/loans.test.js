@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 
-import { availableCopies, checkout, returnBook } from "../src/services/loans.js";
+import { availableCopies, checkout, renew, returnBook } from "../src/services/loans.js";
 import { addDays } from "../src/util/dates.js";
 import { ConflictError } from "../src/util/errors.js";
 import { T0, seededStore } from "./helpers.js";
@@ -24,4 +24,19 @@ test("returning twice is a conflict", () => {
   const loan = checkout(store, { bookId: book.id, memberId: member.id, now: T0 });
   returnBook(store, { loanId: loan.id, now: addDays(T0, 2) });
   assert.throws(() => returnBook(store, { loanId: loan.id }), ConflictError);
+});
+
+test("renew pushes the due date back by one loan period", () => {
+  const { store, book, member } = seededStore();
+  const loan = checkout(store, { bookId: book.id, memberId: member.id, now: T0 });
+  const renewed = renew(store, { loanId: loan.id, now: addDays(T0, 10) });
+  assert.equal(renewed.dueAt.toISOString(), addDays(T0, 28).toISOString());
+  assert.equal(renewed.renewals, 1);
+});
+
+test("a returned loan cannot be renewed", () => {
+  const { store, book, member } = seededStore();
+  const loan = checkout(store, { bookId: book.id, memberId: member.id, now: T0 });
+  returnBook(store, { loanId: loan.id, now: addDays(T0, 1) });
+  assert.throws(() => renew(store, { loanId: loan.id }), ConflictError);
 });
