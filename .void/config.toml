@@ -1,0 +1,10 @@
+[researcher]
+bundle = "research"
+
+[void-review]
+quickRuntime = "claude"
+groupingInstructions = """
+Changes to src/config.js or src/services/fines.js change what members pay: always mark them high risk.
+Keep renames and formatting in their own mechanical group.
+Anything touching authentication or API keys is high risk.
+"""

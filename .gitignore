@@ -1,0 +1,8 @@
+node_modules/
+coverage/
+*.log
+.env
+
+# Void control plane: operational state only. `.void/config.toml` is the one authored file
+.void/*
+!.void/config.toml
