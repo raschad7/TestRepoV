@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 
+import { createMember } from "../src/models/member.js";
 import { availableCopies, checkout, returnBook } from "../src/services/loans.js";
 import { addDays } from "../src/util/dates.js";
 import { ConflictError } from "../src/util/errors.js";
@@ -24,4 +25,11 @@ test("returning twice is a conflict", () => {
   const loan = checkout(store, { bookId: book.id, memberId: member.id, now: T0 });
   returnBook(store, { loanId: loan.id, now: addDays(T0, 2) });
   assert.throws(() => returnBook(store, { loanId: loan.id }), ConflictError);
+});
+
+test("staff members borrow for 28 days", () => {
+  const { store, book } = seededStore();
+  const staff = store.saveMember(createMember({ id: "m2", name: "Grace", email: "grace@example.com", tier: "staff" }));
+  const loan = checkout(store, { bookId: book.id, memberId: staff.id, now: T0 });
+  assert.equal(loan.dueAt.toISOString(), addDays(T0, 28).toISOString());
 });
