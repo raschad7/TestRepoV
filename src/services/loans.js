@@ -13,13 +13,17 @@ import { fineFor } from "./fines.js";
  * @property {Date | null} returnedAt
  */
 
+export function loanPeriodFor(member) {
+  return member.tier === "Staff" ? policy.staffLoanPeriodDays : policy.loanPeriodDays;
+}
+
 export function availableCopies(store, bookId) {
   const book = store.getBook(bookId);
   return book.copies - store.activeLoansForBook(bookId).length;
 }
 
 export function checkout(store, { bookId, memberId, now = new Date() }) {
-  store.getMember(memberId);
+  const member = store.getMember(memberId);
   if (availableCopies(store, bookId) <= 0) throw new ConflictError("no copies available");
   if (store.activeLoansForMember(memberId).length >= policy.maxActiveLoans) {
     throw new ConflictError(`member already has ${policy.maxActiveLoans} active loans`);
@@ -30,7 +34,7 @@ export function checkout(store, { bookId, memberId, now = new Date() }) {
     bookId,
     memberId,
     borrowedAt: now,
-    dueAt: addDays(now, policy.loanPeriodDays),
+    dueAt: addDays(now, loanPeriodFor(member)),
     returnedAt: null,
   });
 }
@@ -40,5 +44,5 @@ export function returnBook(store, { loanId, now = new Date() }) {
   if (loan.returnedAt) throw new ConflictError("loan already returned");
   const returned = { ...loan, returnedAt: now };
   store.saveLoan(returned);
-  return { loan: returned, fineCents: fineFor(returned) };
+  return { loan: returned, fineCents: fineFor(returned, now, store.getMember(loan.memberId)) };
 }

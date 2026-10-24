@@ -18,3 +18,7 @@ test("25 cents per whole day late", () => {
 test("fine is capped", () => {
   assert.equal(fineFor(loan(addDays(T0, 365))), 1000);
 });
+
+test("staff pay half", () => {
+  assert.equal(fineFor(loan(addDays(T0, 3)), T0, { tier: "staff" }), 37.5);
+});
