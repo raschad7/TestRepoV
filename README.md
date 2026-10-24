@@ -21,7 +21,11 @@ npm start          # http://localhost:3000
 | POST | `/members` | Add a member `{ name, email }` |
 | GET | `/members/:id/fines` | Total outstanding fines, in cents |
 | POST | `/loans` | Borrow a book `{ bookId, memberId }` |
-| POST | `/loans/:id/return` | Return a book; the response includes the fine |
+| POST | `/loans/:id/return` | Return a book; the response includes the fine and who the copy is now held for |
+| POST | `/books/:id/reservations` | Join the queue for a book `{ memberId }` |
+| GET | `/books/:id/reservations` | The waiting queue, first in line first |
+| POST | `/reservations/:id/cancel` | Leave the queue |
+| POST | `/reservations/expire` | Expire unclaimed holds (run daily) |
 
 ## Layout
 

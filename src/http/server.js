@@ -5,6 +5,7 @@ import { createBook } from "../models/book.js";
 import { createMember } from "../models/member.js";
 import { outstandingFines } from "../services/fines.js";
 import { availableCopies, checkout, returnBook } from "../services/loans.js";
+import { cancelReservation, expireHolds, promoteNext, queueFor, reserve } from "../services/reservations.js";
 import { Router } from "./router.js";
 
 async function readJson(req) {
@@ -39,7 +40,22 @@ export function buildRouter(store) {
   });
 
   router.add("POST", "/loans", ({ body }) => [201, checkout(store, body)]);
-  router.add("POST", "/loans/:id/return", ({ params }) => [200, returnBook(store, { loanId: params.id })]);
+  router.add("POST", "/loans/:id/return", ({ params }) => {
+    const result = returnBook(store, { loanId: params.id });
+    const heldFor = promoteNext(store, { bookId: result.loan.bookId });
+    return [200, { ...result, heldFor: heldFor?.memberId ?? null }];
+  });
+
+  router.add("POST", "/books/:id/reservations", ({ params, body }) => [
+    201,
+    reserve(store, { bookId: params.id, memberId: body.memberId }),
+  ]);
+  router.add("GET", "/books/:id/reservations", ({ params }) => [200, queueFor(store, params.id)]);
+  router.add("POST", "/reservations/:id/cancel", ({ params }) => [
+    200,
+    cancelReservation(store, { reservationId: params.id }),
+  ]);
+  router.add("POST", "/reservations/expire", () => [200, { expired: expireHolds(store) }]);
 
   return router;
 }

@@ -41,3 +41,18 @@ test("errors echo the caller's request id", async () => {
   const res = await fetch(`${base}/books/nope`, { headers: { "x-request-id": "req-123" } });
   assert.equal((await res.json()).requestId, "req-123");
 });
+
+test("reserve a checked-out book and get it held on return", async () => {
+  const book = await (await post("/books", { title: "Emma", author: "Jane Austen", copies: 1 })).json();
+  const ada = await (await post("/members", { name: "Ada", email: "ada2@example.com" })).json();
+  const bob = await (await post("/members", { name: "Bob", email: "bob@example.com" })).json();
+  const loan = await (await post("/loans", { bookId: book.id, memberId: ada.id })).json();
+
+  const reserved = await post(`/books/${book.id}/reservations`, { memberId: bob.id });
+  assert.equal(reserved.status, 201);
+  const queue = await (await fetch(`${base}/books/${book.id}/reservations`)).json();
+  assert.equal(queue.length, 1);
+
+  const returned = await (await post(`/loans/${loan.id}/return`, {})).json();
+  assert.equal(returned.heldFor, bob.id);
+});
