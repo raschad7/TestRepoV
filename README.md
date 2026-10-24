@@ -38,4 +38,5 @@ research/            Researcher Lab corpus (OKF notes) about lending policy
 docs/specs/          specs that Void Paw can build from
 ```
 
-See [AGENTS.md](AGENTS.md) for the rules PRs are reviewed against.
+See [AGENTS.md](AGENTS.md) for the rules PRs are reviewed against, and
+[docs/api-examples.md](docs/api-examples.md) for curl examples.
