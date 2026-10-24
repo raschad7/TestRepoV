@@ -4,4 +4,5 @@ export const policy = Object.freeze({
   maxActiveLoans: 5,
   finePerDayCents: 25,
   maxFineCents: 1000,
+  pickupWindowDays: 3,
 });
