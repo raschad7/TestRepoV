@@ -36,3 +36,8 @@ test("validation errors are 400", async () => {
   const res = await post("/books", { title: "", author: "x" });
   assert.equal(res.status, 400);
 });
+
+test("errors echo the caller's request id", async () => {
+  const res = await fetch(`${base}/books/nope`, { headers: { "x-request-id": "req-123" } });
+  assert.equal((await res.json()).requestId, "req-123");
+});

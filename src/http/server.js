@@ -1,3 +1,4 @@
+import { randomUUID } from "node:crypto";
 import { createServer } from "node:http";
 
 import { createBook } from "../models/book.js";
@@ -56,7 +57,8 @@ export function createApp(store) {
       const [status, payload] = await match.handler({ params: match.params, query: url.searchParams, body });
       send(res, status, payload);
     } catch (err) {
-      send(res, err.status ?? 500, { error: err.message });
+      const requestId = req.headers["x-request-id"] ?? randomUUID();
+      send(res, err.status ?? 500, { error: err.message, requestId });
     }
   });
 }
