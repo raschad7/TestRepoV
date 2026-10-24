@@ -35,6 +35,22 @@ export function checkout(store, { bookId, memberId, now = new Date() }) {
   });
 }
 
+/** Pushes the due date back by one loan period. */
+export function renew(store, { loanId, now = new Date() }) {
+  const loan = store.getLoan(loanId);
+  if (loan.returnedAt) throw new ConflictError("loan already returned");
+  const renewals = loan.renewals ?? 0;
+  if (renewals > 2) throw new ConflictError("loan cannot be renewed again");
+
+  const renewed = {
+    ...loan,
+    dueAt: addDays(loan.dueAt, policy.loanPeriodDays),
+    renewals: renewals + 1,
+    lastRenewedAt: now,
+  };
+  return store.saveLoan(renewed);
+}
+
 export function returnBook(store, { loanId, now = new Date() }) {
   const loan = store.getLoan(loanId);
   if (loan.returnedAt) throw new ConflictError("loan already returned");
