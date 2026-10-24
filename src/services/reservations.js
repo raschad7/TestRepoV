@@ -1,3 +1,5 @@
+import { policy } from "../config.js";
+import { addDays, isPast } from "../util/dates.js";
 import { ConflictError, NotFoundError } from "../util/errors.js";
 import { availableCopies } from "./loans.js";
 
@@ -7,7 +9,8 @@ import { availableCopies } from "./loans.js";
  * @property {string} bookId
  * @property {string} memberId
  * @property {Date} createdAt
- * @property {"waiting" | "cancelled"} state
+ * @property {"waiting" | "ready" | "fulfilled" | "expired" | "cancelled"} state
+ * @property {Date} [holdUntil]  set when the reservation becomes ready
  */
 
 function reservationsOf(store) {
@@ -48,4 +51,27 @@ export function cancelReservation(store, { reservationId }) {
 export function positionInQueue(store, { bookId, memberId }) {
   const index = queueFor(store, bookId).findIndex((r) => r.memberId === memberId);
   return index === -1 ? null : index + 1;
+}
+
+/**
+ * Call after a copy comes back. The first waiting member gets the copy held for
+ * `pickupWindowDays`. Returns the reservation that became ready, or null.
+ */
+export function promoteNext(store, { bookId, now = new Date() }) {
+  if (availableCopies(store, bookId) <= 0) return null;
+  const [next] = queueFor(store, bookId);
+  if (!next) return null;
+  const ready = { ...next, state: "ready", holdUntil: addDays(now, policy.pickupWindowDays) };
+  reservationsOf(store).set(ready.id, ready);
+  return ready;
+}
+
+/** Expires holds nobody picked up and passes each copy to the next member in line. */
+export function expireHolds(store, { now = new Date() } = {}) {
+  const expired = [...reservationsOf(store).values()].filter((r) => r.state === "ready" && isPast(r.holdUntil, now));
+  for (const hold of expired) {
+    reservationsOf(store).set(hold.id, { ...hold, state: "expired" });
+    promoteNext(store, { bookId: hold.bookId, now });
+  }
+  return expired.length;
 }
