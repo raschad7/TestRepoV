@@ -15,7 +15,7 @@ npm start          # http://localhost:3000
 | Method | Path | What it does |
 |---|---|---|
 | GET | `/health` | Liveness check |
-| GET | `/books` | List books |
+| GET | `/books?q=` | List books; `q` filters by title or author |
 | POST | `/books` | Add a book `{ title, author, isbn?, copies? }` |
 | GET | `/books/:id` | One book plus how many copies are available |
 | POST | `/members` | Add a member `{ name, email }` |

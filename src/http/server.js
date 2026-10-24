@@ -3,6 +3,7 @@ import { createServer } from "node:http";
 
 import { createBook } from "../models/book.js";
 import { createMember } from "../models/member.js";
+import { searchBooks } from "../services/catalog.js";
 import { outstandingFines } from "../services/fines.js";
 import { availableCopies, checkout, returnBook } from "../services/loans.js";
 import { Router } from "./router.js";
@@ -24,7 +25,7 @@ export function buildRouter(store) {
 
   router.add("GET", "/health", () => [200, { ok: true }]);
 
-  router.add("GET", "/books", () => [200, store.listBooks()]);
+  router.add("GET", "/books", ({ query }) => [200, searchBooks(store, query.get("q") ?? "")]);
   router.add("POST", "/books", ({ body }) => [201, store.saveBook(createBook({ ...body, id: store.newId() }))]);
   router.add("GET", "/books/:id", ({ params }) => {
     const book = store.getBook(params.id);
